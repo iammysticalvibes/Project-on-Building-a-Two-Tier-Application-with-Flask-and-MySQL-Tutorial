@@ -1,0 +1,243 @@
+Launch an EC2 Instance OS > ubuntu
+
+If we want to build docker containers, run
+
+before installation of docker engine we have to update the machine
+
+CMD > sudo apt-get update -y (packages latest versions will get installed)
+
+CMD > sudo apt-get upgrade -y
+
+INSTALLATION OF DOCKER
+
+CMD > sudo apt-get install docker.io -y
+
+what will get install by this CMD = docker engine install hoga, container d, docker d, docker cli install hoga ek hi CMD mein
+
+CHECK DOCKER STATUS AFTER INSTALL
+
+CMD > systemctl status docker
+
+HOW MUCH DOCKER CONTAINER RUNNING CMD > docker ps
+
+our user does not have file permission to run docker cmd so we will check group
+
+group check CMD > cat /etc/group docker:x:122: ( new group will be get created after using docker cmd)
+
+if we put our user in docker grp we will have permission of docker cmd to file than our user will be ubuntu)
+
+we are adding our ubuntu user in docker grp i.e > USER will be > ubuntu
+
+group will be > docker:x:122
+
+Now we are adding ubuntu user to docker group by below mentioned CMD
+
+CMD > sudo usermod -aG docker $USER
+
+by this CMD ubuntu is added in docker grp > docker:x:122:ubuntu
+
+CMD > sudo reboot (If user is not getting added in docker grp)
+
+Now if we use docker ps command there will be no permission error because we have added user in docker file
+
+Docker container running command CMD > docker ps
+
+CMD > docker ps -a (to see inactive or dead container we use this command)
+
+<< visit docker hub on google.com >> sign-up for docker account
+
+If you want to push or pull docker than there will be a command for it CMD > docker login (in command prompt or terminal)
+
+ID : docker login your-id
+
+PASS : your-password
+
+To check docker images CMD > docker image ls
+
+<< NOW WE ARE CREATING DOCKER MY-SQL CONTAINER >>
+
+CMD > docker run mysql:5.7 [by docker image we are creating docker container we are downloading docker image of mysql]
+
+Docker name change we are changing name while making docker image CMD > docker run -d --name mysql -e MYSQL_ROOT_PASSWORD=test@123 mysql:5.7
+
+To check the running container CMD > docker ps
+
+Terminal of container or to enter in the cotainer CMD > docker exec -it d0802db3be43 bash
+
+login to mysql inside the container
+
+CMD > mysql -u root -p
+
+pass: test@123
+
+SHOW DATA-BASES IN MY-SQL CMD > show databases;
+
+NOW exit from my-sql CMD > exit (and come to ubuntu)
+
+MAKE FOLDER i.e volumes CMD > mkdir volumes
+
+In volumes create mysql-data folder that will be /home/ubuntu/volumes/mysql-data
+
+CMD > mkdir mysql-data
+
+KILL THE DOCKER CONTAINER CMD > docker kill 2949f02bfbdf
+
+MOUNT THE VOLUME OF MYSQL DATA (BACKUP OF MYSQL DATA-BASE) - volume main data persist
+
+path were we want to mount the data of my-sql
+
+CMD > cd /home/ubuntu/volumes/mysql-data
+
+CMD > docker run -d -v $(pwd):/var/lib/mysql --name mysql-safe -e MYSQL_ROOT_PASSWORD=test@123 mysql:5.7
+
+Terminal of container or to enter in the cotainer CMD > docker exec -it a01fc9d0eb1c bash
+
+login to mysql inside the container
+
+CMD > mysql -u root -p
+
+pass: test@123
+
+SHOW DATA-BASES IN MY-SQL mysql> show databases;
+
+we will create a data-base here mysql> create database KYC;
+
+SHOW DATA-BASES IN MY-SQL mysql> show databases;
+
+mysql> use KYC;
+
+mysql>
+
+CREATE TABLE messages ( id INT AUTO_INCREMENT PRIMARY KEY, message TEXT );
+
+So now we are inserting simple data in our data-base
+
+mysql> insert into messages (message) values ("lol");
+
+mysql> select * from messages;
+
+exit from my sql
+
+check docker container CMD > docker ps
+
+Docker kill the container
+
+CMD > docker kill 1c3cd8e0d87b
+
+here we can observe KYC database file in present working directory /home/ubuntu/volumes/mysql-data
+
+Again we are running the container but their will be same name conflict to run the container of mysql-safe
+
+CMD > docker rm mysql-safe
+
+CMD > docker run -d -v $(pwd):/var/lib/mysql --name mysql-safe -e MYSQL_ROOT_PASSWORD=test@123 mysql:5.7
+
+CMD > docker ps
+
+now we will run the command in mysql-safe conrainer
+
+CMD > docker exec -it b6329804f0a2 bash
+
+login to mysql inside the container
+
+CMD > mysql -u root -p
+
+pass: test@123
+
+SHOW DATA-BASES IN MY-SQL mysql> show databases;
+
+mysql> use KYC;
+
+mysql> select * from messages;
+
+Now exit from mysql databases
+
+<< FLASK APP-DEPLOY >>
+
+Deploying flask Application through docker
+
+<< Two-Tier Application with Flask and MySQL >>
+
+In which we are connecting flask (application) and DB (data-base) in one docker network
+
+so now we are cloning the repository of two-tier-flask-app
+
+CMD > sudo apt-get git install -y
+
+CMD > git init
+
+CMD > mkdir flask-app (Creating directory of flask-app)
+
+In flask-app create two-tier-flask-app folder * <>
+In flask-app directory we will use this command CMD > git clone github.com/LondheShubham153/two-tier-flask-..
+
+CMD > cd two-tier-flask-app
+
+CMD > vi app.py (to observe what has been written in file)
+when we are in app.py file we can observe on which port the application is running i.e port > 5000
+
+To exit app.py file CMD > :qa (Quit file without saving and without making changes in file content)
+
+NOW we will build Docker-image
+
+CMD > docker build -t two-tier-backend:latest . (we are builidng backend image first)
+
+CMD > docker image ls
+
+CMD > docker run -d -p 5000:5000 -e MYSQL_USER=root -e MYSQL_PASSWORD=test@123 -e MYSQL_DB=KYC two-tier-backend:latest
+
+List the Docker-images
+
+CMD > docker ps
+
+Now we are inspecting the network ID
+
+CMD > docker inspect af3bd4213d74 (af3bd4213d74 = this defines the container id) here we observe that Network ID are different for both the container
+
+Now we are bringing both the container in same NET-WORK to communite with each other
+
+CMD > docker network ls
+
+CMD > docker network rm (container ID) if needed
+
+NOW WE ARE CREATING NEW NET-WORK
+
+CMD > docker network create twotier (by this we got Network-Id)
+
+CMD > docker network ls (we can observe two-tier network in network list)
+
+CMD > docker ps (This CMD will generate docker container id)
+
+CMD > docker kill af3bd4213d74 b6329804f0a (we are terminating both the container because they are not in the same network)
+
+NOW WE WILL DEPLOY TWO-TIER APPLICATION *
+we are already having the image
+
+CMD > docker image ls (the image of two-tier backend and mysql)
+
+CMD > cd ~
+
+CMD > cd volumes
+
+CMD > cd mysql-data
+
+CMD > pwd
+
+CMD > docker run -d -v $(pwd):/var/lib/mysql --network twotier -e MYSQL_USER=root -e MYSQL_PASSWORD=test@123 -e MYSQL_DB=KYC --name two-tier-mysql mysql:5.7
+
+CMD > docker ps
+
+Inspect the docker container by which we can see network id of container CMD > docker run -d -p 5000:5000 -e MYSQL_HOST=two-tier-mysql -e MYSQL_USER=root -e MYSQL_PASSWORD=test@123 -e MYSQL_DB=KYC --network twotier two-tier-backend:latest
+
+CMD > docker ps
+
+CMD > docker inspect 7b9f7a9dcce7 (it will show network two-tier)
+
+CMD > docker network ls
+
+CMD > docker inspect 8dab2daedf08 (it will show network two-tier) here we observe that Network ID are same for both the container
+
+Now the Application of two-tier has been succesfully deployed
+
+Before using below CMD make sure to edit SECURITY GRP and allow port no 5000 in custom tcp section *
+CMD > http://89.65.114.280:5000 (use this cmd on browser)
